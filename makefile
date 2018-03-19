@@ -1,10 +1,10 @@
 test : prog1generator
 
 prog1generator : prog1generator.o commands.o time.o
-	gcc -g -Wall prog1generator.o -o prog1generator
+	gcc -g -Wall 80-20.o -o 80-20
 
 prog1generator.o :
-	gcc -c prog1generator.c
+	gcc -c 80-20.c
 
 clean :
-	-rm -f *.o prog1generator
+	-rm -f *.o 80-20

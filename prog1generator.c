@@ -2,7 +2,7 @@
 
 void print_u();
 
-int main(int argc, char * argv[ ]) {
+int generate(int argc, char * argv[ ]) {
 
 	// booleans for our argument options
 	bool s = false;

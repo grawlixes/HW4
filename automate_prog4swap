@@ -1,0 +1,34 @@
+#!/bin/bash
+
+workload=("No-locality" "80-20" "Looping")
+re_pol=("OPT" "LRU" "FIFO" "Rand" "Clock")
+
+mkdir -p graphical-output-directory
+cd graphical-output-directory
+
+for w in ${workload[@]}; do
+    csv_file="$w.csv"
+    >$csv_file
+    for((m=5;m<=100;m+=5)); do
+        printf "$m" >> $csv_file
+        for r in ${re_pol[@]}; do
+		result=$(../prog4swap -m $m -r $r -w $w)
+		printf ",\t" >> $csv_file
+	        printf "$result" >> $csv_file	
+        done
+	printf "\n" >> $csv_file
+    done
+
+    pdf_file="$w.pdf"
+    gnuplot <<- EOF
+        set terminal pdf
+	set output "${pdf_file}"
+	set title "$w"
+	set xlabel "Cache Size (Blocks)"
+	set ylabel "Hit Rate (%)"
+        set key outside right top
+        plot "${csv_file}" using 1:2 with linespoints title "${re_pol[0]}", "${csv_file}" using 1:3 with linespoints title "${re_pol[1]}", "${csv_file}" using 1:4 with linespoints title "${re_pol[2]}", "${csv_file}" using 1:5 with linespoints title "${re_pol[3]}", "${csv_file}" using 1:6 with linespoints title "${re_pol[4]}"
+	EOF
+done
+
+cd ..

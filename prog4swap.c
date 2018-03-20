@@ -8,18 +8,20 @@
 
 //https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt
 
+#define NUM_ACCESSES 10000
+
 void no_locality(int *workload){
 	unsigned long seed = time(NULL);
 	srand(seed);
 	int i;
-	for(i = 0; i < 10000; ++i){
+	for(i = 0; i < NUM_ACCESSES; ++i){
 		workload[i] = rand()%100;
 	}
 }
 
 void looping(int *workload){
 	int i;
-	for(i = 0; i < 10000; ++i){
+	for(i = 0; i < NUM_ACCESSES; ++i){
 		workload[i] = i%50;
 	}
 }
@@ -35,18 +37,31 @@ double opt(int *memory,int memory_size, int *workload){
 	return 0;
 }
 
+void eighty_twenty(int * workload) {
+	int i;
+	int count = NUM_ACCESSES*(.8);
+	for (i = NUM_ACCESSES ; i >= 0 ; i--) {
+		if ((rand()%5 < 4 && count > 0) || (i == count && count > 0)) {
+			workload[i] = rand()%20;
+			count--;
+		} else {
+			workload[i] = rand()%80 + 20;
+		}
+	}
+}
+
 int main(int argc, char **argv){
 	int memory_size = -1;
 	char *replacement_policy = NULL;
 	char *workload_type = NULL;
-	int workload[10000];
+	int workload[NUM_ACCESSES];
 	int c;
 	while ((c = getopt (argc, argv, "m:r:w:")) != -1)
 		switch (c) {
 			case 'm':
 				memory_size = atoi(optarg);
-				if(memory_size <= 0 || memory_size > 100){
-					puts("The argument to the \"-m\" option must be at least 1 or at most 100.");
+				if(memory_size < 5 || memory_size > 100 || memory_size%5 != 0){
+					puts("The argument to the \"-m\" option must be 5, 10, 15, ..., 100.");
 					fputs("./prog4swap [-m size-of-memory] [-r replacement-policy] [-w workload]\n",stderr);
 					exit(0);
 				}
@@ -96,7 +111,7 @@ int main(int argc, char **argv){
 	if(strcmp(workload_type,"No-locality") == 0){
 		no_locality(workload);
 	}else if(strcmp(workload_type,"80-20") == 0){
-		//whateverkylenamesthisfunction(workload);
+		eighty_twenty(workload);
 	}else{
 		looping(workload);
 	}
@@ -114,7 +129,7 @@ int main(int argc, char **argv){
 	}
 	/*
 	int i;
-	for(i = 0; i < 10000; ++i){
+	for(i = 0; i < NUM_ACCESSES; ++i){
 		printf("%d ",workload[i]);
 	puts("");
 	}

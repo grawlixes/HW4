@@ -123,6 +123,10 @@ double opt(int *workload, int *memory, int memory_size){
 	return (hit_count/NUM_ACCESSES)*100;
 }
 
+double fifo(int *workload, int *memory, int memory_size){
+	return 0;
+}
+
 int main(int argc, char **argv){
 	int memory_size = -1;
 	char *replacement_policy = NULL;

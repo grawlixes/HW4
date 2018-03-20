@@ -40,7 +40,7 @@ double opt(int *memory,int memory_size, int *workload){
 void eighty_twenty(int * workload) {
 	int i;
 	int count = NUM_ACCESSES*(.8);
-	for (i = NUM_ACCESSES ; i >= 0 ; i--) {
+	for (i = NUM_ACCESSES-1 ; i >= 0 ; i--) {
 		if ((rand()%5 < 4 && count > 0) || (i == count && count > 0)) {
 			workload[i] = rand()%20;
 			count--;
@@ -48,6 +48,32 @@ void eighty_twenty(int * workload) {
 			workload[i] = rand()%80 + 20;
 		}
 	}
+}
+
+double lru(int * memory, int memory_size, int * workload) {
+	int i;
+	int cur_size = 1;
+	memory[0] = workload[0];
+	int used[memory_size];
+	for (i = 1 ; i < NUM_ACCESSES ; i++) {
+		if (cur_size != memory_size) {
+			int j;
+			int chosen = 0;
+			for (j = 0 ; j < cur_size ; j++) {
+				if (memory[j] == workload[i]) {
+					chosen = 1;
+					break;
+				}
+			}
+			if (!chosen) {
+				memory[cur_size] = workload[i];
+			}
+		} else {
+			
+		}
+	}
+
+	return 0;
 }
 
 int main(int argc, char **argv){
@@ -119,7 +145,7 @@ int main(int argc, char **argv){
 	if(strcmp(replacement_policy,"OPT") == 0){
 		//opt(memory,memory_size,workload)
 	}else if(strcmp(workload_type,"LRU") == 0){
-		//lru(memory,memory_size,workload)
+		lru(memory,memory_size,workload)
 	}else if(strcmp(workload_type,"FIFO") == 0){
 		//fifo(memory,memory_size,workload)
 	}else if(strcmp(workload_type,"Rand") == 0){

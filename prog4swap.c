@@ -13,7 +13,7 @@ void no_locality(int *workload){
 	srand(seed);
 	int i;
 	for(i = 0; i < 10000; ++i){
-		workload[i] = rand()%99;
+		workload[i] = rand()%100;
 	}
 }
 
@@ -22,6 +22,17 @@ void looping(int *workload){
 	for(i = 0; i < 10000; ++i){
 		workload[i] = i%50;
 	}
+}
+
+double opt(int *memory,int memory_size, int *workload){
+	int i;
+	for(i = 0; i < 10000; ++i){
+		if(i < memory_size){
+			memory[i] = workload[i];
+		}
+	}
+	//printf("")
+	return 0;
 }
 
 int main(int argc, char **argv){
@@ -42,7 +53,7 @@ int main(int argc, char **argv){
 				break;
 			case 'r':
 				if(strcmp(optarg,"OPT") == 0 || strcmp(optarg,"LRU") == 0 
-						|| strcmp(optarg,"FIFO") == 0 || strcmp(optarg,"Rand") || strcmp(optarg,"Clock") == 0){
+						|| strcmp(optarg,"FIFO") == 0 || strcmp(optarg,"Rand") == 0 || strcmp(optarg,"Clock") == 0){
 					replacement_policy = optarg;
 				}else{
 					puts("Invalid replacement policy");
@@ -88,6 +99,18 @@ int main(int argc, char **argv){
 		//whateverkylenamesthisfunction(workload);
 	}else{
 		looping(workload);
+	}
+
+	if(strcmp(replacement_policy,"OPT") == 0){
+		//opt(memory,memory_size,workload)
+	}else if(strcmp(workload_type,"LRU") == 0){
+		//lru(memory,memory_size,workload)
+	}else if(strcmp(workload_type,"FIFO") == 0){
+		//fifo(memory,memory_size,workload)
+	}else if(strcmp(workload_type,"Rand") == 0){
+		//random_evict(memory,memory_size,workload)
+	}else{
+		//clock(memory,memory_size,workload)
 	}
 	/*
 	int i;

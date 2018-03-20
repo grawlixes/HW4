@@ -8,24 +8,27 @@
 
 //https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt
 
-/*
-int no_locality(){
+void no_locality(int *workload){
+	unsigned long seed = time(NULL);
 	srand(seed);
 	int i;
-	for(i = 0; i < nValue; i++){
-		fprintf(output,"%d\n",rand()%maxValue + minValue);
+	for(i = 0; i < 10000; ++i){
+		workload[i] = rand()%99;
 	}
 }
-*/
+
+void looping(int *workload){
+	int i;
+	for(i = 0; i < 10000; ++i){
+		workload[i] = i%50;
+	}
+}
 
 int main(int argc, char **argv){
 	int memory_size = -1;
-	int	min_page = 0;
-	int	max_page = 99;
 	char *replacement_policy = NULL;
 	char *workload_type = NULL;
-	int *workload[10000];
-	unsigned long seed = time(NULL);
+	int workload[10000];
 	int c;
 	while ((c = getopt (argc, argv, "m:r:w:")) != -1)
 		switch (c) {
@@ -79,4 +82,19 @@ int main(int argc, char **argv){
 	}
 
 	int *memory = malloc(memory_size*sizeof(int));
+	if(strcmp(workload_type,"No-locality") == 0){
+		no_locality(workload);
+	}else if(strcmp(workload_type,"80-20") == 0){
+		//whateverkylenamesthisfunction(workload);
+	}else{
+		looping(workload);
+	}
+	/*
+	int i;
+	for(i = 0; i < 10000; ++i){
+		printf("%d ",workload[i]);
+	puts("");
+	}
+	*/
+	free(memory);
 }

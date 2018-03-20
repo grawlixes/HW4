@@ -61,6 +61,7 @@ double lru(int * memory, int memory_size, int * workload) {
 	}
 
 	return 0;
+}
 
 int find(int page, int *memory,int memory_size){
 	int i;
@@ -192,7 +193,7 @@ int main(int argc, char **argv){
 		double hit_rate = opt(workload,memory,memory_size);
 		printf("%f\n",hit_rate);
 	}else if(strcmp(workload_type,"LRU") == 0){
-		lru(memory,memory_size,workload)
+		lru(memory,memory_size,workload);
 	}else if(strcmp(workload_type,"FIFO") == 0){
 		//fifo(memory,memory_size,workload);
 	}else if(strcmp(workload_type,"Rand") == 0){

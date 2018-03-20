@@ -6,18 +6,7 @@
 //#include <ctype.h>
 #include <unistd.h>
 
-#define NUM_ACCESSES 10
-
-int find(int page, int *memory,int memory_size){
-	int i;
-	for(i = 0; i < memory_size; ++i){
-		if(memory[i] == page){
-			return 1;
-		}
-	}
-	return 0;
-}
-
+#define NUM_ACCESSES 10000
 
 void no_locality(int *workload){
 	unsigned long seed = time(NULL);
@@ -46,7 +35,6 @@ void eighty_twenty(int * workload) {
 		} else {
 			workload[i] = rand()%80 + 20;
 		}
-			printf("%d\n", workload[i]);
 	}
 }
 
@@ -58,7 +46,7 @@ double lru(int * memory, int memory_size, int * workload) {
 	int used[memory_size];
 	used[0] = 0;
 
-	int hits = 0;
+	int hits = 1;
 
 	int i;
 	for (i = 1 ; i < NUM_ACCESSES ; i++) {
@@ -97,8 +85,23 @@ double lru(int * memory, int memory_size, int * workload) {
 			
 		}
 	}
-
 	return 100*((double) hits)/NUM_ACCESSES;
+}
+
+double clock(int * workload, int * memory, int memory_size) {
+	
+
+	return 0;	
+}
+
+int find(int page, int *memory,int memory_size){
+	int i;
+	for(i = 0; i < memory_size; ++i){
+		if(memory[i] == page){
+			return 1;
+		}
+	}
+	return 0;
 }
 
 
@@ -111,11 +114,12 @@ double opt(int *workload, int *memory, int memory_size){
 			hit_count++;
 			continue;
 		}
-
 		if(memory_used < memory_size){
 			/*if we still have memory space*/
 			memory[memory_used] = workload[i];
 			memory_used++;
+			/*ignore cold-start/compulsory misses by accumulating the hit count*/
+			hit_count++;
 		}else{
 			int evict_index = -1;
 			/*The furthest page in memory we can find so far is the very next one*/
@@ -149,6 +153,10 @@ double opt(int *workload, int *memory, int memory_size){
 		}
 	}
 	return (hit_count/NUM_ACCESSES)*100;
+}
+
+double fifo(int *workload, int *memory, int memory_size){
+	return 0;
 }
 
 int main(int argc, char **argv){
@@ -217,7 +225,6 @@ int main(int argc, char **argv){
 		looping(workload);
 	}
 
-	printf("'%s'", replacement_policy);
 	if(strcmp(replacement_policy,"OPT") == 0){
 		double hit_rate = opt(workload,memory,memory_size);
 		printf("%f\n",hit_rate);
@@ -229,7 +236,7 @@ int main(int argc, char **argv){
 	}else if(strcmp(replacement_policy,"Rand") == 0){
 		//random_evict(memory,memory_size,workload);
 	}else{
-		//clock(memory,memory_size,workload);
+		clock(memory,memory_size,workload);
 	}
 	/*
 	int i;

@@ -7,12 +7,24 @@
 #include <unistd.h>
 
 //https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt
+
+/*
+int no_locality(){
+	srand(seed);
+	int i;
+	for(i = 0; i < nValue; i++){
+		fprintf(output,"%d\n",rand()%maxValue + minValue);
+	}
+}
+*/
+
 int main(int argc, char **argv){
 	int memory_size = -1;
 	int	min_page = 0;
 	int	max_page = 99;
 	char *replacement_policy = NULL;
-	char *workload = NULL;
+	char *workload_type = NULL;
+	int *workload[10000];
 	unsigned long seed = time(NULL);
 	int c;
 	while ((c = getopt (argc, argv, "m:r:w:")) != -1)
@@ -37,7 +49,7 @@ int main(int argc, char **argv){
 				break;
 			case 'w':
 				if(strcmp(optarg,"No-locality") == 0 || strcmp(optarg,"80-20") == 0 || strcmp(optarg,"Looping") == 0){
-					workload = optarg;
+					workload_type = optarg;
 				}else{
 					puts("Invalid workload");
 					fputs("./prog4swap [-m size-of-memory] [-r replacement-policy] [-w workload]\n",stderr);
@@ -55,14 +67,16 @@ int main(int argc, char **argv){
 		fputs("./prog4swap [-m size-of-memory] [-r replacement-policy] [-w workload]\n",stderr);
 		exit(0);
 	}
-	if(!workload){
+	if(!workload_type){
 		puts("No workload entered");
 		fputs("./prog4swap [-m size-of-memory] [-r replacement-policy] [-w workload]\n",stderr);
 		exit(0);
 	}
-	//srand(seed);
-	//int i;
-	//for(i = 0; i < nValue; i++){
-		//fprintf(output,"%d\n",rand()%maxValue + minValue);
-	//}
+	if(memory_size < 0){
+		puts("No memory size entered");
+		fputs("./prog4swap [-m size-of-memory] [-r replacement-policy] [-w workload]\n",stderr);
+		exit(0);
+	}
+
+	int *memory = malloc(memory_size*sizeof(int));
 }

@@ -1,10 +1,21 @@
-test : prog1generator
+TARGET1=prog4swap
 
-prog1generator : prog1generator.o commands.o time.o
-	gcc -g -Wall 80-20.o -o 80-20
+# Specifiy the target
+all: $(TARGET1)
 
-prog1generator.o :
-	gcc -c 80-20.c
+# Specify the object files that the target depends on
+# Also specify the object files needed to create the executable
+$(TARGET1):	$(TARGET1).o
+	gcc $(TARGET1).o -o $(TARGET1) 
 
-clean :
-	-rm -f *.o 80-20
+# Specify how the object files should be created from source files
+$(TARGET1).o:	$(TARGET1).c
+	gcc -c -Wall $(TARGET1).c
+
+# Specify the object files and executables that are generated
+# and need to be removed to re-compile the whole thing
+clean:
+	rm -f *.o $(TARGET1)
+
+run:	$(TARGET1)
+	./$(TARGET1) -m 5 -r OPT -w No-locality

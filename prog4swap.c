@@ -6,7 +6,18 @@
 //#include <ctype.h>
 #include <unistd.h>
 
-#define NUM_ACCESSES 10000
+#define NUM_ACCESSES 10
+
+int find(int page, int *memory,int memory_size){
+	int i;
+	for(i = 0; i < memory_size; ++i){
+		if(memory[i] == page){
+			return 1;
+		}
+	}
+	return 0;
+}
+
 
 void no_locality(int *workload){
 	unsigned long seed = time(NULL);
@@ -27,6 +38,7 @@ void looping(int *workload){
 void eighty_twenty(int * workload) {
 	int i;
 	int count = NUM_ACCESSES*(.8);
+	srand(time(NULL));
 	for (i = NUM_ACCESSES-1 ; i >= 0 ; i--) {
 		if ((rand()%5 < 4 && count > 0) || (i == count && count > 0)) {
 			workload[i] = rand()%20;
@@ -34,43 +46,61 @@ void eighty_twenty(int * workload) {
 		} else {
 			workload[i] = rand()%80 + 20;
 		}
+			printf("%d\n", workload[i]);
 	}
 }
 
 double lru(int * memory, int memory_size, int * workload) {
-	int i;
+
 	int cur_size = 1;
 	memory[0] = workload[0];
+
 	int used[memory_size];
+	used[0] = 0;
+
+	int hits = 0;
+
+	int i;
 	for (i = 1 ; i < NUM_ACCESSES ; i++) {
-		if (cur_size != memory_size) {
-			int j;
-			int chosen = 0;
-			for (j = 0 ; j < cur_size ; j++) {
-				if (memory[j] == workload[i]) {
-					chosen = 1;
-					break;
+		int j;
+		int chosen = 0;
+		for (j = 0 ; j < cur_size ; j++) {
+			if (memory[j] == workload[i]) {
+				chosen = 1;
+				used[j] = 0;
+				hits += 1;
+			} else {
+				used[j] += 1;
+			}
+		}
+
+		// add new page, compulsory (ignore)
+		if (!chosen && memory_size != cur_size) {
+			memory[cur_size] = workload[i];
+			used[cur_size] = 0;
+			cur_size++;
+			hits++;
+		// add new page, cache full (non-compulsory) 
+		} else if (!chosen && memory_size == cur_size) {
+			int k;
+			int max_index = 0;
+			for (k = 1 ; k < memory_size ; k++) {
+				if (used[max_index] < used[k]) {
+					max_index = k;
 				}
 			}
-			if (!chosen) {
-				memory[cur_size] = workload[i];
-			}
+
+			memory[max_index] = workload[i];
+			used[max_index] = 0;
+		// add no new page, do nothing and move on	
 		} else {
 			
 		}
 	}
 
-	return 0;
-
-int find(int page, int *memory,int memory_size){
-	int i;
-	for(i = 0; i < memory_size; ++i){
-		if(memory[i] == page){
-			return 1;
-		}
-	}
-	return 0;
+	return 100*((double) hits)/NUM_ACCESSES;
 }
+
 
 double opt(int *workload, int *memory, int memory_size){
 	int memory_used = 0;
@@ -187,14 +217,16 @@ int main(int argc, char **argv){
 		looping(workload);
 	}
 
+	printf("'%s'", replacement_policy);
 	if(strcmp(replacement_policy,"OPT") == 0){
 		double hit_rate = opt(workload,memory,memory_size);
 		printf("%f\n",hit_rate);
-	}else if(strcmp(workload_type,"LRU") == 0){
-		lru(memory,memory_size,workload)
-	}else if(strcmp(workload_type,"FIFO") == 0){
+	}else if(strcmp(replacement_policy,"LRU") == 0){
+		double hit_rate = lru(memory,memory_size,workload);
+		printf("%f\n", hit_rate);
+	}else if(strcmp(replacement_policy,"FIFO") == 0){
 		//fifo(memory,memory_size,workload);
-	}else if(strcmp(workload_type,"Rand") == 0){
+	}else if(strcmp(replacement_policy,"Rand") == 0){
 		//random_evict(memory,memory_size,workload);
 	}else{
 		//clock(memory,memory_size,workload);
@@ -207,4 +239,5 @@ int main(int argc, char **argv){
 	}
 	*/
 	free(memory);
+	return 0;
 }

@@ -6,8 +6,6 @@
 //#include <ctype.h>
 #include <unistd.h>
 
-//https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt
-
 #define NUM_ACCESSES 10000
 
 void no_locality(int *workload){
@@ -24,17 +22,6 @@ void looping(int *workload){
 	for(i = 0; i < NUM_ACCESSES; ++i){
 		workload[i] = i%50;
 	}
-}
-
-double opt(int *memory,int memory_size, int *workload){
-	int i;
-	for(i = 0; i < 10000; ++i){
-		if(i < memory_size){
-			memory[i] = workload[i];
-		}
-	}
-	//printf("")
-	return 0;
 }
 
 void eighty_twenty(int * workload) {
@@ -74,6 +61,64 @@ double lru(int * memory, int memory_size, int * workload) {
 	}
 
 	return 0;
+
+int find(int page, int *memory,int memory_size){
+	int i;
+	for(i = 0; i < memory_size; ++i){
+		if(memory[i] == page){
+			return 1;
+		}
+	}
+	return 0;
+}
+
+double opt(int *workload, int *memory, int memory_size){
+	int memory_used = 0;
+	double hit_count = 0;
+	int i;
+	for(i = 0; i < NUM_ACCESSES; ++i){
+		if(find(workload[i],memory,memory_size)){
+			hit_count++;
+			continue;
+		}
+
+		if(memory_used < memory_size){
+			/*if we still have memory space*/
+			memory[memory_used] = workload[i];
+			memory_used++;
+		}else{
+			int evict_index = -1;
+			/*The furthest page in memory we can find so far is the very next one*/
+			int furthest= i+1;
+			int j;
+			for(j = 0; j < memory_size; ++j){
+				int k;
+				for(k = (i+1); k < NUM_ACCESSES; ++k){
+					if(memory[j] == workload[k]){
+						/*loop through and see if we can find the page, if it is farther
+						 * than the current farthest page, then update the furthest page, and evict the farther page*/
+						if(k > furthest){
+							furthest = k;
+							evict_index = j;
+						}
+						break;
+					}
+				}
+				if(k == NUM_ACCESSES){
+					memory[j] = workload[i];
+					break;
+				}
+			}
+			if(memory[j] != workload[i]){
+				if(evict_index == -1){
+					memory[0] = workload[i];
+				}else{
+					memory[evict_index] = workload[i];
+				}
+			}
+		}
+	}
+	return (hit_count/NUM_ACCESSES)*100;
 }
 
 int main(int argc, char **argv){
@@ -143,15 +188,16 @@ int main(int argc, char **argv){
 	}
 
 	if(strcmp(replacement_policy,"OPT") == 0){
-		//opt(memory,memory_size,workload)
+		double hit_rate = opt(workload,memory,memory_size);
+		printf("%f\n",hit_rate);
 	}else if(strcmp(workload_type,"LRU") == 0){
 		lru(memory,memory_size,workload)
 	}else if(strcmp(workload_type,"FIFO") == 0){
-		//fifo(memory,memory_size,workload)
+		//fifo(memory,memory_size,workload);
 	}else if(strcmp(workload_type,"Rand") == 0){
-		//random_evict(memory,memory_size,workload)
+		//random_evict(memory,memory_size,workload);
 	}else{
-		//clock(memory,memory_size,workload)
+		//clock(memory,memory_size,workload);
 	}
 	/*
 	int i;

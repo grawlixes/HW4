@@ -56,11 +56,12 @@ double opt(int *workload, int *memory, int memory_size){
 			hit_count++;
 			continue;
 		}
-
 		if(memory_used < memory_size){
 			/*if we still have memory space*/
 			memory[memory_used] = workload[i];
 			memory_used++;
+			/*ignore cold-start/compulsory misses by accumulating the hit count*/
+			hit_count++;
 		}else{
 			int evict_index = -1;
 			/*The furthest page in memory we can find so far is the very next one*/

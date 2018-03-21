@@ -124,7 +124,51 @@ double opt(int *workload, int *memory, int memory_size){
 }
 
 double fifo(int *workload, int *memory, int memory_size){
-	return 0;
+	int memory_used = 0;
+	double hit_count = 0;
+	int counter = 0;
+	int i;
+	for(i = 0; i < NUM_ACCESSES; ++i){
+		if(find(workload[i],memory,memory_size)){
+			hit_count++;
+			continue;
+		}
+		if(memory_used < memory_size){
+			/*if we still have memory space*/
+			memory[memory_used] = workload[i];
+			memory_used++;
+			/*ignore cold-start/compulsory misses by accumulating the hit count*/
+			hit_count++;
+		}else{
+			memory[counter%memory_size] = workload[i];
+			counter++;
+		}
+	}
+	return (hit_count/NUM_ACCESSES)*100;
+}
+
+double random_evict(int *workload, int *memory, int memory_size){
+	unsigned long seed = time(NULL);
+	srand(seed);
+	int memory_used = 0;
+	double hit_count = 0;
+	int i;
+	for(i = 0; i < NUM_ACCESSES; ++i){
+		if(find(workload[i],memory,memory_size)){
+			hit_count++;
+			continue;
+		}
+		if(memory_used < memory_size){
+			/*if we still have memory space*/
+			memory[memory_used] = workload[i];
+			memory_used++;
+			/*ignore cold-start/compulsory misses by accumulating the hit count*/
+			hit_count++;
+		}else{
+			memory[rand()%memory_size] = workload[i];
+		}
+	}
+	return (hit_count/NUM_ACCESSES)*100;
 }
 
 int main(int argc, char **argv){
@@ -193,18 +237,19 @@ int main(int argc, char **argv){
 		looping(workload);
 	}
 
+	double hit_rate;
 	if(strcmp(replacement_policy,"OPT") == 0){
-		double hit_rate = opt(workload,memory,memory_size);
-		printf("%f\n",hit_rate);
-	}else if(strcmp(workload_type,"LRU") == 0){
-		lru(memory,memory_size,workload);
-	}else if(strcmp(workload_type,"FIFO") == 0){
-		//fifo(memory,memory_size,workload);
-	}else if(strcmp(workload_type,"Rand") == 0){
-		//random_evict(memory,memory_size,workload);
+		hit_rate = opt(workload,memory,memory_size);
+	}else if(strcmp(replacement_policy,"LRU") == 0){
+		hit_rate = lru(memory,memory_size,workload);
+	}else if(strcmp(replacement_policy,"FIFO") == 0){
+		hit_rate = fifo(workload,memory,memory_size);
+	}else if(strcmp(replacement_policy,"Rand") == 0){
+		hit_rate = random_evict(workload,memory,memory_size);
 	}else{
-		//clock(memory,memory_size,workload);
+		//hit_rate = clock_evict(memory,memory_size,workload);
 	}
+	printf("%f\n",hit_rate);
 	/*
 	int i;
 	for(i = 0; i < NUM_ACCESSES; ++i){

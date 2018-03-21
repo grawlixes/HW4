@@ -261,7 +261,7 @@ int main(int argc, char **argv){
 		switch (c) {
 			case 'm':
 				memory_size = atoi(optarg);
-				if(memory_size < 5 || memory_size > 100 || memory_size%5 != 0){
+				if(memory_size < 0 || memory_size > 100 || memory_size%5 != 0){
 					puts("The argument to the \"-m\" option must be 5, 10, 15, ..., 100.");
 					fputs("./prog4swap [-m size-of-memory] [-r replacement-policy] [-w workload]\n",stderr);
 					exit(0);
@@ -318,18 +318,27 @@ int main(int argc, char **argv){
 	}
 
 	double hit_rate;
-	if(strcmp(replacement_policy,"OPT") == 0){
-		hit_rate = opt(workload,memory,memory_size);
-	}else if(strcmp(replacement_policy,"LRU") == 0){
-		hit_rate = lru(memory,memory_size,workload);
-	}else if(strcmp(replacement_policy,"FIFO") == 0){
-		hit_rate = fifo(workload,memory,memory_size);
-	}else if(strcmp(replacement_policy,"Rand") == 0){
-		hit_rate = random_evict(workload,memory,memory_size);
-	}else{
-		hit_rate = clock_evict(workload, memory, memory_size);
+	if (memory_size == 0) {
+		hit_rate = 0;
+
+	} else {
+		if(strcmp(replacement_policy,"OPT") == 0){
+			hit_rate = opt(workload,memory,memory_size);
+		}else if(strcmp(replacement_policy,"LRU") == 0){
+			hit_rate = lru(memory,memory_size,workload);
+		}else if(strcmp(replacement_policy,"FIFO") == 0){
+			hit_rate = fifo(workload,memory,memory_size);
+		}else if(strcmp(replacement_policy,"Rand") == 0){
+			hit_rate = random_evict(workload,memory,memory_size);
+		}else{
+			hit_rate = clock_evict(workload, memory, memory_size);
+		}
 	}
-	printf("%f\n",hit_rate);
+
+	char buf[20];
+	sprintf(buf, "%f", hit_rate);
+	printf("%s", buf);
+
 	/*
 	int i;
 	for(i = 0; i < NUM_ACCESSES; ++i){
@@ -338,4 +347,5 @@ int main(int argc, char **argv){
 	}
 	*/
 	free(memory);
+	return 0;
 }

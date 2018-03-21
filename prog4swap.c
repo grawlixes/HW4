@@ -43,7 +43,7 @@ double lru(int * memory, int memory_size, int * workload) {
 	int cur_size = 1;
 	memory[0] = workload[0];
 
-	int used[memory_size];
+	int * used = malloc(sizeof(int)*memory_size);
 	used[0] = 0;
 
 	int hits = 1;
@@ -85,13 +85,61 @@ double lru(int * memory, int memory_size, int * workload) {
 			
 		}
 	}
+	free(used);
 	return 100*((double) hits)/NUM_ACCESSES;
 }
 
-double clock(int * workload, int * memory, int memory_size) {
-	
+double clock_evict(int * workload, int * memory, int memory_size) {
 
-	return 0;	
+	int cur_size = 1;
+	memory[0] = workload[0];
+
+	int * usage = malloc(sizeof(int)*memory_size);
+	usage[0] = 1;
+
+	int hits = 1;
+
+	int i;
+	int k = 0;
+	for (i = 1 ; i < NUM_ACCESSES ; i++) {
+		int j;
+		int chosen = 0;
+		for (j = 0 ; j < cur_size ; j++) {
+			if (memory[j] == workload[i]) {
+				chosen = 1;
+				usage[j] = 1;
+				hits += 1;
+				break;
+			}
+		}
+
+		// add new page, compulsory (ignore)
+		if (!chosen && memory_size != cur_size) {
+			memory[cur_size] = workload[i];
+			usage[cur_size] = 1;
+			cur_size++;
+			hits++;
+		// add new page, cache full (non-compulsory, don't ignore) 
+		} else if (!chosen && memory_size == cur_size) {
+			while (usage[k] != 0) {
+				usage[k] = 0;
+				if (k != memory_size-1) {
+					k++;
+				} else {
+					k = 0;
+				}
+			}
+
+			memory[k] = workload[i];
+			usage[k] = 1;
+
+		// add no new page, do nothing and move on	
+		} else {
+			
+		}
+	}
+	free(usage);
+	return 100*((double) hits)/NUM_ACCESSES;
 }
 
 int find(int page, int *memory,int memory_size){
@@ -279,7 +327,7 @@ int main(int argc, char **argv){
 	}else if(strcmp(replacement_policy,"Rand") == 0){
 		hit_rate = random_evict(workload,memory,memory_size);
 	}else{
-		//hit_rate = clock_evict(memory,memory_size,workload);
+		hit_rate = clock_evict(workload, memory, memory_size);
 	}
 	printf("%f\n",hit_rate);
 	/*
